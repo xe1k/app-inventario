@@ -1,0 +1,17 @@
+# Dependencias (se reinstalan con `npm install`; better-sqlite3 es nativo)
+node_modules/
+
+# Datos sensibles y locales: base de datos, certificados, documentos, respaldos.
+# La carpeta data/ se vuelve a crear sola al iniciar (src/db/index.js).
+data/
+
+# Logs y temporales
+*.log
+npm-debug.log*
+
+# Configuración local del editor/herramientas
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitudes</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 📝 Solicitudes</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <h2 class="section">Registrar una solicitud</h2>
+    <p class="muted">Anota lo que pidió un trabajador, sobre todo si <strong>no había en bodega</strong>.
+    Ej.: «Juanito Pérez pidió guantes y no había». No afecta el stock; queda para reponer y dar respuesta.</p>
+
+    <div class="card">
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+        <label style="flex:1 1 220px">Quién pidió *
+          <input id="solicitante" list="trabajadoresList" placeholder="Nombre del trabajador" autocomplete="off">
+          <datalist id="trabajadoresList"></datalist>
+        </label>
+        <label style="flex:0 1 140px">Cantidad
+          <input id="cantidad" type="number" min="0" step="any" placeholder="opcional">
+        </label>
+      </div>
+      <label>Qué se solicitó *
+        <input id="descripcion" placeholder="Ej.: guantes de cabritilla talla L">
+      </label>
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+        <label style="flex:1 1 220px">Motivo / por qué no se entregó
+          <input id="motivo" list="motivosList" placeholder="Ej.: sin stock" autocomplete="off">
+          <datalist id="motivosList">
+            <option value="Sin stock"></option>
+            <option value="No existe en catálogo"></option>
+            <option value="Agotado / por reponer"></option>
+            <option value="Pedido a futuro"></option>
+          </datalist>
+        </label>
+        <label style="flex:1 1 220px">Nota (opcional)
+          <input id="nota" placeholder="Comentario">
+        </label>
+      </div>
+      <div style="display:flex;gap:.8rem;align-items:center;margin-top:1rem">
+        <button class="btn-inline" id="btnGuardar">Registrar solicitud</button>
+        <span id="msg" class="msg"></span>
+      </div>
+    </div>
+
+    <h2 class="section" style="margin-top:1.5rem">Solicitudes registradas</h2>
+    <div class="toolbar">
+      <select id="fEstado" style="flex:0 1 200px">
+        <option value="pendiente">⏳ Pendientes</option>
+        <option value="resuelta">✅ Resueltas</option>
+        <option value="">Todas</option>
+      </select>
+      <input type="search" id="buscar" placeholder="Buscar por quién pidió o qué pidió…" style="flex:1 1 200px">
+    </div>
+
+    <div id="lista" style="margin-top:1rem"></div>
+  </main>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/solicitudes.js"></script>
+</body>
+</html>

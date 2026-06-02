@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reportes y auditoría</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .tabs { display:flex; flex-wrap:wrap; gap:.4rem; margin:1rem 0 .5rem; }
+    .tab { padding:.5rem .9rem; border:1px solid var(--gris-borde); background:#fff; border-radius:9px;
+           cursor:pointer; font-weight:600; font-size:.9rem; color:#475569; }
+    .tab.activa { background:var(--azul); color:#fff; border-color:var(--azul); }
+    .panel { display:none; }
+    .panel.activa { display:block; }
+    .kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1rem; margin-top:1rem; }
+    .kpi { background:#fff; border-radius:12px; padding:1.1rem; box-shadow:0 2px 6px rgba(0,0,0,.06); border:1px solid #e2e8f0; }
+    .kpi .num { font-size:1.7rem; font-weight:800; color:var(--azul-osc); }
+    .kpi .lbl { color:#64748b; font-size:.82rem; margin-top:.2rem; }
+    .kpi .sub { font-size:.78rem; color:#94a3b8; margin-top:.25rem; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 📊 Reportes y auditoría</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <div class="tabs">
+      <div class="tab activa" data-tab="semana">📅 General</div>
+      <div class="tab" data-tab="stock">Stock</div>
+      <div class="tab" data-tab="movimientos">Movimientos</div>
+      <div class="tab" data-tab="trabajadores">Por trabajador</div>
+      <div class="tab" data-tab="auditoria" id="tabAuditoria" style="display:none">Auditoría</div>
+    </div>
+
+    <!-- GENERAL (semana) -->
+    <section class="panel activa" id="panel-semana">
+      <div class="toolbar">
+        <button class="btn-inline sec" id="semAnt">◀ Anterior</button>
+        <strong id="semRango" style="flex:1 1 200px;text-align:center"></strong>
+        <button class="btn-inline sec" id="semSig">Siguiente ▶</button>
+        <button class="btn-inline sec" id="semHoy">Esta semana</button>
+        <a class="btn-inline" id="semImprimir" target="_blank">🖨️ Imprimir / PDF</a>
+      </div>
+      <div id="semContenido"></div>
+    </section>
+
+    <!-- STOCK -->
+    <section class="panel" id="panel-stock">
+      <div class="toolbar" style="justify-content:space-between">
+        <input id="stockBuscar" placeholder="Buscar por nombre, código o marca…">
+        <a class="btn-inline" id="stockImprimir" target="_blank">🖨️ Imprimir / PDF</a>
+        <a class="btn-inline sec" href="/api/reportes/export/stock.csv" id="stockCSV">⬇ Exportar CSV</a>
+      </div>
+      <div id="stockTabla"></div>
+    </section>
+
+    <!-- MOVIMIENTOS -->
+    <section class="panel" id="panel-movimientos">
+      <div class="toolbar">
+        <label style="margin:0">Desde <input type="date" id="movDesde" style="display:inline-block"></label>
+        <label style="margin:0">Hasta <input type="date" id="movHasta" style="display:inline-block"></label>
+        <button class="btn-inline" id="movAplicar">Ver</button>
+        <a class="btn-inline" id="movImprimir" target="_blank">🖨️ Imprimir / PDF</a>
+        <a class="btn-inline sec" href="#" id="movCSV">⬇ Exportar CSV</a>
+      </div>
+      <h2 class="section">Resumen por tipo</h2>
+      <div id="movPorTipo" style="margin:.5rem 0 1.2rem"></div>
+      <h2 class="section">Items con más rotación (salidas)</h2>
+      <div id="movTop" style="margin-top:.5rem"></div>
+    </section>
+
+    <!-- POR TRABAJADOR -->
+    <section class="panel" id="panel-trabajadores">
+      <div class="toolbar">
+        <label style="margin:0">Desde <input type="date" id="trabDesde" style="display:inline-block"></label>
+        <label style="margin:0">Hasta <input type="date" id="trabHasta" style="display:inline-block"></label>
+        <button class="btn-inline" id="trabAplicar">Ver</button>
+        <a class="btn-inline" id="trabImprimir" target="_blank">🖨️ Imprimir / PDF</a>
+        <a class="btn-inline sec" href="#" id="trabCSV">⬇ Exportar CSV</a>
+      </div>
+      <p class="muted">Cuánto retiró cada trabajador en el período y cuánto tiene pendiente de devolver (siempre vigente). Toca una fila para ver el detalle.</p>
+      <div id="trabTabla" style="margin-top:.6rem"></div>
+    </section>
+
+    <!-- AUDITORÍA -->
+    <section class="panel" id="panel-auditoria">
+      <div class="toolbar">
+        <select id="audAccion" style="flex:0 1 180px"><option value="">Todas las acciones</option></select>
+        <input id="audBuscar" placeholder="Buscar en el detalle…">
+        <label style="margin:0">Desde <input type="date" id="audDesde" style="display:inline-block"></label>
+        <label style="margin:0">Hasta <input type="date" id="audHasta" style="display:inline-block"></label>
+        <button class="btn-inline" id="audAplicar">Ver</button>
+        <a class="btn-inline" id="audImprimir" target="_blank">🖨️ Imprimir / PDF</a>
+        <a class="btn-inline sec" href="#" id="audCSV">⬇ Exportar CSV</a>
+      </div>
+      <p class="muted">Bitácora de acciones sensibles: inicios de sesión, movimientos, cambios de catálogo, documentos y ajustes. Solo lectura.</p>
+      <div id="audTabla" style="margin-top:.6rem"></div>
+    </section>
+  </main>
+
+  <!-- Modal: detalle de trabajador -->
+  <div class="modal-bg" id="modalTrab">
+    <div class="modal">
+      <div class="modal-head"><h3 id="trabModalTitulo">Trabajador</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <div id="trabModalBody"></div>
+      <div class="row" style="margin-top:1rem">
+        <button class="btn-inline sec" id="trabCerrar" style="flex:1">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/modales.js"></script>
+  <script src="/js/reportes.js"></script>
+</body>
+</html>

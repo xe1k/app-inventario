@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitácora</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 📜 Bitácora</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <h2 class="section">Quién hizo qué y cuándo</h2>
+    <p class="muted">Registro de acciones sensibles: inicios de sesión, movimientos, ediciones de catálogo,
+    trabajadores, usuarios, documentos y ajustes. Solo lectura, visible únicamente para el administrador.</p>
+
+    <div class="toolbar">
+      <select id="audAccion" style="flex:0 1 200px"><option value="">Todas las acciones</option></select>
+      <input id="audBuscar" placeholder="Buscar en el detalle…">
+      <label style="margin:0">Desde <input type="date" id="audDesde" style="display:inline-block"></label>
+      <label style="margin:0">Hasta <input type="date" id="audHasta" style="display:inline-block"></label>
+      <button class="btn-inline" id="audAplicar">Ver</button>
+      <button class="btn-inline sec" id="audSemana">📅 Esta semana</button>
+      <a class="btn-inline" id="audImprimir" target="_blank">🖨️ Imprimir / PDF</a>
+      <a class="btn-inline sec" href="#" id="audCSV">⬇ Exportar CSV</a>
+    </div>
+
+    <div id="audTabla" style="margin-top:.6rem"></div>
+  </main>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/bitacora.js"></script>
+</body>
+</html>

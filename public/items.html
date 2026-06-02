@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de items</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 🗃️ Catálogo</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <input type="search" id="buscar" placeholder="Buscar por nombre, código, serie…">
+      <select id="filtroTipo">
+        <option value="">Todos los tipos</option>
+        <option value="retornable">Retornables</option>
+        <option value="consumible">Consumibles</option>
+      </select>
+      <button class="btn-inline sec" id="btnBajos">Stock bajo</button>
+      <button class="btn-inline" id="btnNuevo">+ Nuevo item</button>
+    </div>
+
+    <div id="lista"></div>
+  </main>
+
+  <!-- Modal: crear / editar -->
+  <div class="modal-bg" id="modalForm">
+    <form class="modal" id="formItem">
+      <div class="modal-head"><h3 id="formTitulo">Nuevo item</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <input type="hidden" id="itemId">
+
+      <label>Nombre *</label>
+      <input type="text" id="f_nombre" required>
+
+      <div class="row">
+        <div>
+          <label>Tipo *</label>
+          <select id="f_tipo" required>
+            <option value="retornable">Retornable (debe volver)</option>
+            <option value="consumible">Consumible (se gasta)</option>
+          </select>
+        </div>
+        <div>
+          <label>Marca</label>
+          <input type="text" id="f_categoria" placeholder="Bosch, Lincoln, 3M…">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Código (vacío = automático)</label>
+          <input type="text" id="f_codigo" placeholder="Auto: RET-00001">
+        </div>
+        <div>
+          <label>N° de serie</label>
+          <input type="text" id="f_serie" placeholder="Solo equipos">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Stock inicial</label>
+          <input type="number" id="f_stock" value="0" step="any" min="0">
+        </div>
+        <div>
+          <label>Stock mínimo (alerta)</label>
+          <input type="number" id="f_stock_minimo" value="0" step="any" min="0">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Unidad</label>
+          <input type="text" id="f_unidad" value="unidad">
+        </div>
+        <div>
+          <label>Ubicación</label>
+          <input type="text" id="f_ubicacion" placeholder="Taller central, Terreno…">
+        </div>
+      </div>
+
+      <div class="msg" id="formMsg"></div>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" class="btn-inline sec" id="btnCancelar" style="flex:1">Cancelar</button>
+        <button type="submit" class="btn-inline" style="flex:1">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal: QR -->
+  <div class="modal-bg" id="modalQr">
+    <div class="modal">
+      <div class="modal-head"><h3>Etiqueta QR</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <div class="qr-print qr-box">
+        <div class="codigo" id="qrCodigo"></div>
+        <img id="qrImg" alt="QR del item">
+        <div id="qrNombre" class="muted"></div>
+      </div>
+      <div class="row" style="margin-top:1rem">
+        <button class="btn-inline sec" id="btnCerrarQr" style="flex:1">Cerrar</button>
+        <button class="btn-inline" id="btnImprimir" style="flex:1">🖨️ Imprimir etiqueta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: estado del equipo (reparación / baja) -->
+  <div class="modal-bg" id="modalEstado">
+    <div class="modal">
+      <div class="modal-head"><h3 id="estadoTitulo">Estado del equipo</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <div id="estadoBody"></div>
+      <div class="msg" id="estadoMsg"></div>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" class="btn-inline sec" data-cerrar-modal style="flex:1">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/modales.js"></script>
+  <script src="/js/items.js"></script>
+</body>
+</html>

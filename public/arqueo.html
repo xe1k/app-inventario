@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arqueo de turno</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 🧮 Arqueo de turno</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <div id="vista"></div>
+  </main>
+
+  <!-- Modal: ver detalle de un arqueo cerrado -->
+  <div class="modal-bg" id="modalDetalle">
+    <div class="modal" style="max-width:560px">
+      <h3 id="detTitulo">Arqueo</h3>
+      <div id="detCuerpo"></div>
+      <div class="row" style="margin-top:1rem">
+        <button class="btn-inline sec" id="btnCerrarDet" style="flex:1">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/arqueo.js"></script>
+</body>
+</html>

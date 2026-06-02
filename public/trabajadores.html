@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trabajadores</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 👷 Trabajadores</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <input type="search" id="buscar" placeholder="Buscar por nombre, RUT, área…">
+      <button class="btn-inline" id="btnNuevo">+ Nuevo trabajador</button>
+    </div>
+    <div id="lista"></div>
+  </main>
+
+  <div class="modal-bg" id="modalForm">
+    <form class="modal" id="formT">
+      <div class="modal-head"><h3 id="formTitulo">Nuevo trabajador</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <input type="hidden" id="tId">
+      <label>Nombre *</label>
+      <input type="text" id="t_nombre" required>
+      <div class="row">
+        <div><label>RUT / Ficha</label><input type="text" id="t_identificador"></div>
+        <div><label>Cargo</label><input type="text" id="t_cargo" placeholder="Soldador, Maestro…"></div>
+      </div>
+      <label>Área</label>
+      <input type="text" id="t_area" placeholder="Soldadura, Obra…">
+      <div class="msg" id="formMsg"></div>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" class="btn-inline sec" id="btnCancelar" style="flex:1">Cancelar</button>
+        <button type="submit" class="btn-inline" style="flex:1">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/modales.js"></script>
+  <script src="/js/trabajadores.js"></script>
+</body>
+</html>

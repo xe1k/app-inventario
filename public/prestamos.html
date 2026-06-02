@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Préstamos abiertos</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; ⏳ Préstamos abiertos</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <h2 class="section">Equipos prestados sin devolver</h2>
+    <p class="muted">Cada fila es un retornable que salió y aún no vuelve. Registra la devolución cuando regrese.</p>
+
+    <div class="toolbar">
+      <input type="search" id="buscar" placeholder="Filtrar por equipo, trabajador, código…">
+      <button class="btn-escanear" id="btnEscanear" title="Devolver escaneando">📷 Escanear devolución</button>
+    </div>
+
+    <div id="lista" style="margin-top:1rem"></div>
+  </main>
+
+  <!-- Modal: registrar devolución -->
+  <div class="modal-bg" id="modalDev">
+    <form class="modal" id="formDev">
+      <div class="modal-head"><h3>Registrar devolución</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <div id="devInfo" class="muted" style="margin-bottom:.6rem"></div>
+      <input type="hidden" id="d_prestamo">
+      <label>Cantidad a devolver</label>
+      <input type="number" id="d_cantidad" step="any" min="0.01">
+      <p class="muted" style="margin-top:.3rem">Si devuelves menos de lo pendiente, el resto sigue como préstamo abierto.</p>
+      <label>Estado del equipo</label>
+      <select id="d_estado">
+        <option value="bueno">✅ Bueno</option>
+        <option value="detalle">🟡 Con detalle / sucio</option>
+        <option value="danado">🔴 Dañado</option>
+        <option value="incompleto">⚠️ Incompleto (falta una pieza)</option>
+      </select>
+      <label>Comentario</label>
+      <textarea id="d_comentario" rows="3" placeholder="Ej: vuelve sin el cable, carcasa rota, motor con ruido…"></textarea>
+      <div class="msg" id="devMsg"></div>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" class="btn-inline sec" data-cerrar-modal style="flex:1">Cancelar</button>
+        <button type="submit" class="btn-inline" style="flex:1">Registrar devolución</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/vendor/html5-qrcode.min.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/escaner.js"></script>
+  <script src="/js/modales.js"></script>
+  <script src="/js/prestamos.js"></script>
+</body>
+</html>

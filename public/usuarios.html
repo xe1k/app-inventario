@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuarios</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 👤 Usuarios</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <!-- Gestión de usuarios (solo admin) -->
+    <section id="adminSeccion" style="display:none">
+      <div class="toolbar" style="justify-content:space-between">
+        <h2 class="section">Usuarios del sistema</h2>
+        <button class="btn-inline" id="btnNuevo">+ Nuevo usuario</button>
+      </div>
+      <p class="muted">El administrador gestiona las cuentas y puede ver/definir la clave de cada usuario.</p>
+      <div id="lista" style="margin-top:.6rem"></div>
+    </section>
+  </main>
+
+  <!-- Modal: crear / editar usuario -->
+  <div class="modal-bg" id="modalForm">
+    <form class="modal" id="formUsuario">
+      <div class="modal-head"><h3 id="formTitulo">Nuevo usuario</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <input type="hidden" id="u_id">
+
+      <div class="row">
+        <div>
+          <label>Usuario (acceso) *</label>
+          <input type="text" id="u_username" autocomplete="off" placeholder="ej: bodega.noche">
+        </div>
+        <div>
+          <label>Nombre completo *</label>
+          <input type="text" id="u_nombre" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Rol *</label>
+          <select id="u_rol">
+            <option value="bodeguero">Bodeguero</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div id="campoTurno">
+          <label>Turno</label>
+          <select id="u_turno">
+            <option value="">— sin turno —</option>
+            <option value="dia">Día</option>
+            <option value="noche">Noche</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="campoClave">
+        <label>Clave inicial *</label>
+        <input type="password" id="u_password" autocomplete="new-password" placeholder="Mínimo 4 caracteres">
+      </div>
+
+      <label id="lblActivo" style="display:none;font-weight:600;margin-top:.8rem">
+        <input type="checkbox" id="u_activo" checked style="width:auto;display:inline-block;vertical-align:middle"> Activo
+      </label>
+
+      <div class="msg" id="formMsg"></div>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" class="btn-inline sec" id="btnCancelar" style="flex:1">Cancelar</button>
+        <button type="submit" class="btn-inline" style="flex:1">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal: resetear clave de un usuario -->
+  <div class="modal-bg" id="modalReset">
+    <form class="modal" id="formReset">
+      <div class="modal-head"><h3>Resetear clave</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <div id="resetInfo" class="muted" style="margin-bottom:.6rem"></div>
+      <input type="hidden" id="r_id">
+      <label>Nueva clave</label>
+      <input type="password" id="r_nueva" autocomplete="new-password" placeholder="Mínimo 4 caracteres">
+      <div class="msg" id="resetMsg"></div>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" class="btn-inline sec" id="btnResetCancelar" style="flex:1">Cancelar</button>
+        <button type="submit" class="btn-inline" style="flex:1">Guardar clave</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/modales.js"></script>
+  <script src="/js/usuarios.js"></script>
+</body>
+</html>

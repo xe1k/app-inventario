@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historial de movimientos</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 🧾 Historial</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <select id="fTipo">
+        <option value="">Todos los tipos</option>
+        <option value="entrada">Entradas</option>
+        <option value="salida">Salidas / préstamos</option>
+        <option value="devolucion">Devoluciones</option>
+        <option value="ajuste">Ajustes</option>
+      </select>
+      <input type="date" id="fDesde" title="Desde">
+      <input type="date" id="fHasta" title="Hasta">
+      <input type="search" id="fTrab" placeholder="Filtrar por trabajador…" style="flex:1 1 200px">
+    </div>
+    <p class="muted">Registro inmutable de cada movimiento (máx. 500 últimos). Esta es la base de la trazabilidad anti-robo.</p>
+    <div id="lista" style="margin-top:.5rem"></div>
+  </main>
+
+  <!-- Modal: editar movimiento (solo admin) -->
+  <div class="modal-bg" id="modalEdit">
+    <form class="modal" id="formEdit">
+      <div class="modal-head"><h3>Editar movimiento</h3>
+        <button type="button" class="modal-x" data-cerrar-modal title="Cerrar">&times;</button></div>
+      <div id="editInfo" class="muted" style="margin-bottom:.6rem"></div>
+      <input type="hidden" id="e_id">
+      <div id="e_trabWrap" style="display:none">
+        <label>Trabajador</label>
+        <select id="e_trab"></select>
+      </div>
+      <label>Motivo / Área</label>
+      <input type="text" id="e_motivo">
+      <label>Observación</label>
+      <input type="text" id="e_obs">
+      <p class="muted" style="margin-top:.6rem">Solo se corrigen estos datos; la cantidad y el stock no cambian. Para deshacer un movimiento, usa “Eliminar”.</p>
+      <div class="msg" id="editMsg"></div>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" class="btn-inline sec" data-cerrar-modal style="flex:1">Cancelar</button>
+        <button type="submit" class="btn-inline" style="flex:1">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/modales.js"></script>
+  <script src="/js/historial.js"></script>
+</body>
+</html>

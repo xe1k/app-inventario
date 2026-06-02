@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario de Bodega</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">📦 Inventario de Bodega</div>
+    <div class="user">
+      <span id="userInfo">…</span>
+      <button id="logoutBtn">Salir</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2 class="section">Panel principal</h2>
+    <p class="muted">Indicadores de hoy</p>
+
+    <a id="avisoFuera" class="aviso-fuera" href="/devoluciones.html" style="display:none"></a>
+
+    <div id="kpis" class="kpis"></div>
+
+    <h2 class="section" style="margin-top:1.5rem">Acciones</h2>
+
+    <div class="grid">
+      <div class="tile" data-modulo="items"><div class="ico">🗃️</div><div class="lbl">Catálogo de items</div></div>
+      <div class="tile" data-modulo="salida"><div class="ico">📤</div><div class="lbl">Entregar / Prestar</div></div>
+      <div class="tile" data-modulo="entrada"><div class="ico">➕</div><div class="lbl">Ingreso de stock</div></div>
+      <div class="tile" data-modulo="prestamos"><div class="ico">⏳</div><div class="lbl">Préstamos abiertos</div></div>
+      <div class="tile" data-modulo="devoluciones"><div class="ico">📥</div><div class="lbl">Devoluciones</div></div>
+      <div class="tile" data-modulo="solicitudes"><div class="ico">📝</div><div class="lbl">Solicitudes</div></div>
+      <div class="tile" data-modulo="documentos"><div class="ico">📁</div><div class="lbl">Documentos por semana</div></div>
+      <div class="tile" data-modulo="trabajadores" data-admin="1"><div class="ico">👷</div><div class="lbl">Trabajadores</div></div>
+      <div class="tile" data-modulo="historial"><div class="ico">🧾</div><div class="lbl">Historial</div></div>
+      <div class="tile" data-modulo="reportes"><div class="ico">📊</div><div class="lbl">Reportes</div></div>
+      <div class="tile" data-modulo="bitacora" data-admin="1"><div class="ico">📜</div><div class="lbl">Bitácora</div></div>
+      <div class="tile" data-modulo="usuarios" data-admin="1"><div class="ico">👤</div><div class="lbl">Usuarios</div></div>
+    </div>
+
+    <div class="card">
+      <h2 class="section">Avance ✅ Módulos 1–8</h2>
+      <p class="muted">Catálogo, movimientos, trabajadores, escaneo con cámara, documentos por semana, alertas de descuadre
+      y reportes con bitácora de auditoría funcionando. Sistema completo.</p>
+    </div>
+  </main>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

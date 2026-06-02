@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingreso - Inventario de Bodega</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <form class="login-card" id="loginForm">
+      <h1>Inventario de Bodega</h1>
+      <p class="sub">Control y trazabilidad de equipos e insumos</p>
+
+      <label for="username">Usuario</label>
+      <input type="text" id="username" autocomplete="username" autofocus required>
+
+      <label for="password">Clave</label>
+      <input type="password" id="password" autocomplete="current-password" required>
+
+      <button type="submit" class="btn">Ingresar</button>
+      <div class="msg" id="msg"></div>
+    </form>
+  </div>
+  <script src="/js/login.js"></script>
+</body>
+</html>

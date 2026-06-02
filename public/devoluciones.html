@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devoluciones</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 📥 Devoluciones</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <!-- Equipos fuera de servicio (dañados / en reparación) -->
+    <section id="fueraServicioWrap" style="display:none">
+      <h2 class="section">🛠️ Equipos fuera de servicio</h2>
+      <p class="muted">Estas unidades NO están disponibles en el catálogo. Cuando el equipo vuelva a funcionar,
+      márcalo <strong>Reparado</strong> (regresa al stock); si ya no sirve, <strong>Dar de baja</strong> (sale del inventario).</p>
+      <div id="fueraServicio" style="margin:.6rem 0 2rem"></div>
+    </section>
+
+    <h2 class="section">Historial de devoluciones</h2>
+    <p class="muted">Cada devolución registrada, con la condición en que volvió el equipo y el comentario.
+    Los que volvieron <strong>dañados o incompletos</strong> aparecen resaltados.</p>
+
+    <div class="toolbar">
+      <select id="fEstado" style="flex:0 1 220px">
+        <option value="">Todos los estados</option>
+        <option value="bueno">✅ Bueno</option>
+        <option value="detalle">🟡 Con detalle / sucio</option>
+        <option value="danado">🔴 Dañado</option>
+        <option value="incompleto">⚠️ Incompleto</option>
+      </select>
+      <input type="search" id="buscar" placeholder="Filtrar por equipo, trabajador, comentario…" style="flex:1 1 200px">
+    </div>
+
+    <div id="lista" style="margin-top:1rem"></div>
+  </main>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/devoluciones.js"></script>
+</body>
+</html>
