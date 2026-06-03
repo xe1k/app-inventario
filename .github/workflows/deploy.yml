@@ -26,7 +26,7 @@ jobs:
           flyctl volumes list -a app-inventario-bodega 2>&1 || true
           echo "=== Creando volumen ==="
           if ! flyctl volumes list -a app-inventario-bodega 2>/dev/null | grep -q "inventario_data"; then
-            flyctl volumes create inventario_data --region gru --size 1 -a app-inventario-bodega --yes 2>&1
+            flyctl volumes create inventario_data --region scl --size 1 -a app-inventario-bodega --yes 2>&1
           else
             echo "Volumen ya existe, omitiendo."
           fi
