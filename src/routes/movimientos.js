@@ -1,10 +1,33 @@
 // Rutas de movimientos: entrada, salida/préstamo, devolución y ajuste.
 // Cada movimiento es inmutable y queda ligado a quién lo registró.
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const db = require('../db');
 const { requireRol } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Carpeta donde se guardan las fotos de comprobantes firmados.
+const FIRMAS_DIR = path.join(__dirname, '..', '..', 'data', 'firmas');
+if (!fs.existsSync(FIRMAS_DIR)) fs.mkdirSync(FIRMAS_DIR, { recursive: true });
+
+const subirFirma = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, FIRMAS_DIR),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+      cb(null, `entrega-${req.params.entregaId}${ext}`);
+    }
+  }),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'].includes(ext)) cb(null, true);
+    else cb(new Error('Solo se permiten imágenes (JPG, PNG, WEBP)'));
+  }
+});
 
 function auditar(usuarioId, accion, detalle) {
   db.prepare('INSERT INTO auditoria (usuario_id, accion, detalle) VALUES (?,?,?)')
@@ -576,6 +599,11 @@ router.get('/entrega/:entregaId/comprobante', (req, res) => {
   .firma { flex: 1; text-align: center; }
   .firma .linea { border-top: 1px solid #475569; padding-top: .35rem; font-size: .82rem; color: #475569; }
   .pie { margin-top: 1.6rem; text-align: center; color: #94a3b8; font-size: .72rem; }
+  .compromiso { margin-top: 1.4rem; padding: .85rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #1e3a8a; border-radius: 6px; font-size: .82rem; color: #1e293b; }
+  .compromiso strong { display: block; margin-bottom: .45rem; font-size: .85rem; color: #1e3a8a; text-transform: uppercase; letter-spacing: .04em; }
+  .compromiso ul { margin: .35rem 0 .5rem 1.1rem; padding: 0; }
+  .compromiso ul li { margin-bottom: .2rem; }
+  .compromiso p { margin: .45rem 0 0; color: #475569; }
   .barra { max-width: 680px; margin: 0 auto 1rem; text-align: center; }
   .barra button { background: #1d4ed8; color: #fff; border: none; padding: .6rem 1.2rem; border-radius: 9px; font-weight: 600; font-size: 1rem; cursor: pointer; }
   @media print { body { background: #fff; padding: 0; } .hoja { box-shadow: none; border-radius: 0; max-width: 100%; } .barra { display: none; } }
@@ -609,6 +637,18 @@ router.get('/entrega/:entregaId/comprobante', (req, res) => {
     ${hayRetornables ? '<div class="nota">⚠️ Esta entrega incluye equipos <strong>retornables</strong> (marcados arriba): deben devolverse a bodega. Este comprobante respalda el préstamo hasta su devolución.</div>' : ''}
     ${notaFaltantes}
 
+    <div class="compromiso">
+      <strong>Compromiso de cuidado y responsabilidad</strong>
+      El trabajador que suscribe declara haber recibido los elementos indicados en este documento en buen estado y se compromete a:
+      <ul>
+        <li>Utilizarlos exclusivamente en las labores asignadas y de acuerdo con su finalidad.</li>
+        <li>Mantenerlos en buen estado, resguardarlos con el debido cuidado y no cederlos a terceros.</li>
+        <li>Reportar de inmediato al encargado de bodega cualquier falla, deterioro, pérdida o hurto, sin excepción.</li>
+        <li>Devolver los equipos retornables en el plazo acordado y en condiciones adecuadas de uso.</li>
+      </ul>
+      <p>El incumplimiento de estas obligaciones —incluyendo no reportar oportunamente daños o pérdidas— podrá dar lugar a las medidas disciplinarias establecidas en el Reglamento Interno de la empresa, sin perjuicio de las responsabilidades civiles o penales que pudieren corresponder.</p>
+    </div>
+
     <div class="firmas">
       <div class="firma"><div class="linea">Firma de quien retira</div></div>
       <div class="firma"><div class="linea">Firma de bodega</div></div>
@@ -620,6 +660,62 @@ router.get('/entrega/:entregaId/comprobante', (req, res) => {
 </body></html>`;
 
   res.type('html').send(html);
+});
+
+// ---------- LISTADO DE ENTREGAS (para reimprimir comprobantes) ----------
+router.get('/entregas', (req, res) => {
+  const { desde, hasta, q } = req.query;
+  let sql = `
+    SELECT m.entrega_id,
+           MIN(m.fecha) AS fecha,
+           t.nombre    AS trabajador,
+           t.identificador AS trab_id,
+           t.cargo,
+           u.nombre    AS entregado_por,
+           m.motivo    AS area,
+           COUNT(*)    AS total_items,
+           SUM(CASE WHEN i.tipo = 'retornable' THEN 1 ELSE 0 END) AS retornables
+      FROM movimientos m
+      JOIN items i ON i.id = m.item_id
+      LEFT JOIN trabajadores t ON t.id = m.trabajador_id
+      LEFT JOIN usuarios u    ON u.id = m.usuario_id
+     WHERE m.entrega_id IS NOT NULL AND m.tipo = 'salida'`;
+  const params = [];
+  if (desde) { sql += ' AND m.fecha >= ?'; params.push(desde); }
+  if (hasta)  { sql += ' AND m.fecha <= ?'; params.push(hasta + ' 23:59:59'); }
+  if (q) {
+    sql += ' AND (t.nombre LIKE ? OR m.entrega_id LIKE ?)';
+    params.push('%' + q + '%', '%' + q + '%');
+  }
+  sql += ' GROUP BY m.entrega_id ORDER BY MIN(m.fecha) DESC LIMIT 300';
+  const rows = db.prepare(sql).all(...params);
+
+  // Marcar cuáles tienen foto de firma subida.
+  const conFirma = new Set(
+    fs.readdirSync(FIRMAS_DIR).map(f => f.replace(/^entrega-/, '').replace(/\.[^.]+$/, ''))
+  );
+  res.json(rows.map(r => ({ ...r, tiene_firma: conFirma.has(String(r.entrega_id)) })));
+});
+
+// GET /entrega/:entregaId/firma  -> devuelve la foto del comprobante firmado
+router.get('/entrega/:entregaId/firma', (req, res) => {
+  const eid = req.params.entregaId.replace(/[^a-zA-Z0-9_-]/g, '');
+  const archivo = fs.readdirSync(FIRMAS_DIR).find(f => f.startsWith(`entrega-${eid}.`));
+  if (!archivo) return res.status(404).json({ error: 'Sin firma' });
+  res.sendFile(path.join(FIRMAS_DIR, archivo));
+});
+
+// POST /entrega/:entregaId/firma  -> sube foto del comprobante firmado
+router.post('/entrega/:entregaId/firma', (req, res) => {
+  const eid = req.params.entregaId.replace(/[^a-zA-Z0-9_-]/g, '');
+  // Eliminar firma anterior si existe (reemplazar).
+  fs.readdirSync(FIRMAS_DIR).filter(f => f.startsWith(`entrega-${eid}.`))
+    .forEach(f => fs.unlinkSync(path.join(FIRMAS_DIR, f)));
+  subirFirma.single('firma')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
+    res.json({ ok: true });
+  });
 });
 
 // ---------- HISTORIAL ----------

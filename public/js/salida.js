@@ -15,9 +15,11 @@ $('item').addEventListener('change', () => {
   if (!opt || !opt.value) { $('aviso').textContent = ''; return; }
   const tipo = opt.dataset.tipo;
   const stock = opt.dataset.stock;
-  $('aviso').innerHTML = tipo === 'retornable'
+  const ubicacion = opt.dataset.ubicacion;
+  const areaTexto = ubicacion ? ` &nbsp;·&nbsp; 📍 <strong>${esc(ubicacion)}</strong>` : '';
+  $('aviso').innerHTML = (tipo === 'retornable'
     ? `🔁 <strong>Retornable</strong>: quedará como préstamo abierto. Disponible: ${stock}`
-    : `📦 <strong>Consumible</strong>: se descuenta del stock. Disponible: ${stock}`;
+    : `📦 <strong>Consumible</strong>: se descuenta del stock. Disponible: ${stock}`) + areaTexto;
 });
 
 // Alta rápida de trabajador sin salir de la pantalla.
@@ -68,7 +70,8 @@ $('btnAgregar').addEventListener('click', () => {
   } else {
     carrito.push({
       item_id: id, codigo: opt.dataset.codigo, nombre: opt.dataset.nombre,
-      tipo: opt.dataset.tipo, unidad: opt.dataset.unidad, cantidad, stock
+      tipo: opt.dataset.tipo, unidad: opt.dataset.unidad, ubicacion: opt.dataset.ubicacion || '',
+      cantidad, stock
     });
   }
   $('msg').className = 'msg';
@@ -96,8 +99,9 @@ function renderCarrito() {
     const badge = c.tipo === 'retornable'
       ? '<span class="badge ret">Retornable</span>'
       : '<span class="badge con">Consumible</span>';
+    const areaTag = c.ubicacion ? `<span class="muted"> · 📍 ${esc(c.ubicacion)}</span>` : '';
     html += `<tr>
-      <td><strong>${esc(c.codigo)}</strong><br><span class="muted">${esc(c.nombre)}</span></td>
+      <td><strong>${esc(c.codigo)}</strong><br><span class="muted">${esc(c.nombre)}</span>${areaTag}</td>
       <td>${formatNum(c.cantidad)} ${esc(c.unidad)}</td>
       <td>${badge}</td>
       <td><button class="btn-sm" style="background:#fee2e2;color:var(--rojo)" onclick="quitarItem(${c.item_id})">Quitar</button></td>

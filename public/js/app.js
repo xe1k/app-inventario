@@ -90,7 +90,8 @@ const RUTAS = {
   historial: '/historial.html',
   reportes: '/reportes.html',
   bitacora: '/bitacora.html',
-  usuarios: '/usuarios.html'
+  usuarios: '/usuarios.html',
+  comprobantes: '/comprobantes.html'
 };
 
 document.querySelectorAll('.tile').forEach(t => {

@@ -55,8 +55,8 @@ function montarSelectorItems(buscarEl, selectEl, opts = {}) {
     const items = await getJSON('/api/items?' + params);
     selectEl.innerHTML = '<option value="">— elige un item —</option>' + items.map(i =>
       `<option value="${i.id}" data-tipo="${i.tipo}" data-unidad="${esc(i.unidad)}" data-stock="${i.stock}"` +
-      ` data-codigo="${esc(i.codigo)}" data-nombre="${esc(i.nombre)}">` +
-      `${esc(i.codigo)} · ${esc(i.nombre)} (stock ${formatNum(i.stock)} ${esc(i.unidad)})</option>`
+      ` data-codigo="${esc(i.codigo)}" data-nombre="${esc(i.nombre)}" data-ubicacion="${esc(i.ubicacion || '')}">` +
+      `${esc(i.codigo)} · ${esc(i.nombre)}${i.ubicacion ? ' · 📍 ' + esc(i.ubicacion) : ''} (stock ${formatNum(i.stock)} ${esc(i.unidad)})</option>`
     ).join('');
   }
   buscarEl.addEventListener('input', recargar);

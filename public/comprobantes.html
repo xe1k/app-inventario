@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comprobantes de entrega</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; 🧾 Comprobantes de entrega</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2 class="section">Historial de entregas</h2>
+      <p class="muted">Busca una entrega para reimprimir su comprobante o adjuntar la foto del documento firmado.</p>
+
+      <div class="row" style="align-items:flex-end;gap:.6rem;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px">
+          <label>Buscar (trabajador o N° entrega)</label>
+          <input type="search" id="fQ" placeholder="Nombre o número…" autocomplete="off">
+        </div>
+        <div>
+          <label>Desde</label>
+          <input type="date" id="fDesde">
+        </div>
+        <div>
+          <label>Hasta</label>
+          <input type="date" id="fHasta">
+        </div>
+        <div style="flex:0 0 auto">
+          <button type="button" class="btn-inline" id="btnBuscar">Buscar</button>
+        </div>
+      </div>
+
+      <div id="lista" style="margin-top:1rem"></div>
+    </div>
+  </main>
+
+  <!-- Modal para ver / cambiar la foto de firma -->
+  <div class="modal" id="modalFirma">
+    <div class="modal-box" style="max-width:500px">
+      <div class="modal-head">
+        <h3>Foto del comprobante firmado</h3>
+        <button class="btn-sm" onclick="cerrarModal()">✕</button>
+      </div>
+      <p class="muted" id="firmaSubtitulo"></p>
+
+      <div id="firmaPreview" style="text-align:center;margin:.8rem 0"></div>
+
+      <label style="margin-top:.8rem">Subir o reemplazar foto</label>
+      <input type="file" id="firmaArchivo" accept="image/*" capture="environment">
+      <div class="msg" id="firmaMsg"></div>
+      <button type="button" class="btn" id="btnSubirFirma" style="margin-top:.8rem">Guardar foto</button>
+    </div>
+  </div>
+
+  <script src="/js/comun.js"></script>
+  <script src="/js/comprobantes.js"></script>
+  <footer class="footer-copy">© Gonzalo Astargo V. — Sistema de Inventario de Bodega</footer>
+</body>
+</html>

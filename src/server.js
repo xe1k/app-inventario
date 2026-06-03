@@ -57,26 +57,32 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Raíz -> dashboard
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'index.html')));
 
-// Servir por HTTPS: la cámara (escaneo) solo funciona en contexto seguro,
-// y los celulares lo exigen al entrar por la red local.
-(async () => {
-  const { key, cert } = await obtenerCert();
-  https.createServer({ key, cert }, app).listen(PORT, () => {
-    console.log('\n  App Inventario corriendo (HTTPS):');
-    console.log(`   - En este PC:        https://localhost:${PORT}`);
-    for (const ip of ipsLocales()) {
-      console.log(`   - Desde el celular:  https://${ip}:${PORT}`);
-    }
-    console.log('\n  Nota: al ser un certificado local, el navegador mostrará un aviso');
-    console.log('  de seguridad la primera vez. Acepta "Continuar / Avanzado" para entrar.\n');
-    // Respaldo automático de la base (máximo uno por día). No bloquea el arranque.
+// En producción (nube), el proveedor maneja HTTPS — el servidor solo escucha HTTP.
+// Localmente usamos HTTPS para que la cámara funcione desde celulares en la red Wi-Fi.
+if (process.env.NODE_ENV === 'production') {
+  http.createServer(app).listen(PORT, () => {
+    console.log(`\n  App Inventario corriendo en puerto ${PORT}\n`);
     backupDiario();
   });
+} else {
+  (async () => {
+    const { key, cert } = await obtenerCert();
+    https.createServer({ key, cert }, app).listen(PORT, () => {
+      console.log('\n  App Inventario corriendo (HTTPS):');
+      console.log(`   - En este PC:        https://localhost:${PORT}`);
+      for (const ip of ipsLocales()) {
+        console.log(`   - Desde el celular:  https://${ip}:${PORT}`);
+      }
+      console.log('\n  Nota: al ser un certificado local, el navegador mostrará un aviso');
+      console.log('  de seguridad la primera vez. Acepta "Continuar / Avanzado" para entrar.\n');
+      backupDiario();
+    });
 
-  // HTTP en el puerto siguiente: solo redirige a HTTPS (por si entran sin https://).
-  http.createServer((req, res) => {
-    const host = (req.headers.host || `localhost:${HTTP_PORT}`).replace(/:\d+$/, `:${PORT}`);
-    res.writeHead(301, { Location: `https://${host}${req.url}` });
-    res.end();
-  }).listen(HTTP_PORT);
-})();
+    // HTTP en el puerto siguiente: solo redirige a HTTPS.
+    http.createServer((req, res) => {
+      const host = (req.headers.host || `localhost:${HTTP_PORT}`).replace(/:\d+$/, `:${PORT}`);
+      res.writeHead(301, { Location: `https://${host}${req.url}` });
+      res.end();
+    }).listen(HTTP_PORT);
+  })();
+}
