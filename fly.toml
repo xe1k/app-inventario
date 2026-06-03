@@ -1,5 +1,5 @@
 app = "app-inventario-bodega"
-primary_region = "scl"
+primary_region = "gru"
 
 [build]
 
