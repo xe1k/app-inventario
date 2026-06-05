@@ -13,6 +13,10 @@ const router = express.Router();
 const FIRMAS_DIR = path.join(__dirname, '..', '..', 'data', 'firmas');
 if (!fs.existsSync(FIRMAS_DIR)) fs.mkdirSync(FIRMAS_DIR, { recursive: true });
 
+// Carpeta donde se guardan las firmas personales de los usuarios.
+const FIRMAS_USUARIOS_DIR = path.join(__dirname, '..', '..', 'data', 'firmas-usuarios');
+if (!fs.existsSync(FIRMAS_USUARIOS_DIR)) fs.mkdirSync(FIRMAS_USUARIOS_DIR, { recursive: true });
+
 const subirFirma = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => cb(null, FIRMAS_DIR),
@@ -530,7 +534,7 @@ router.get('/:id/comprobante', (req, res) => {
 // ---------- COMPROBANTE DE ENTREGA MÚLTIPLE (varios items, imprimible) ----------
 router.get('/entrega/:entregaId/comprobante', (req, res) => {
   const movs = db.prepare(
-    `SELECT m.cantidad, m.motivo, m.observacion, m.turno, m.fecha,
+    `SELECT m.cantidad, m.motivo, m.observacion, m.turno, m.fecha, m.usuario_id,
             i.codigo, i.nombre AS item_nombre, i.tipo AS item_tipo, i.unidad, i.serie,
             t.nombre AS trabajador, t.identificador AS trab_id, t.cargo,
             u.nombre AS entregado_por
@@ -568,6 +572,28 @@ router.get('/entrega/:entregaId/comprobante', (req, res) => {
       <td>${pill}</td>
     </tr>`;
   }).join('');
+
+  // Firma del trabajador (digital o foto adjunta).
+  const eidSan = req.params.entregaId.replace(/[^a-zA-Z0-9_-]/g, '');
+  const archivoFirma = fs.readdirSync(FIRMAS_DIR).find(f => f.startsWith(`entrega-${eidSan}.`));
+  let firmaHtml = '<div style="height:64px"></div>';
+  if (archivoFirma) {
+    const ext = path.extname(archivoFirma).toLowerCase();
+    const mime = (ext === '.jpg' || ext === '.jpeg') ? 'image/jpeg' : ext === '.webp' ? 'image/webp' : 'image/png';
+    const b64 = fs.readFileSync(path.join(FIRMAS_DIR, archivoFirma)).toString('base64');
+    firmaHtml = `<img src="data:${mime};base64,${b64}" style="max-width:220px;max-height:80px;display:block;margin:0 auto .35rem;border-radius:4px;border:1px solid #e2e8f0">`;
+  }
+
+  // Firma del bodeguero (firma personal guardada por el usuario que registró la entrega).
+  const archivoFirmaUsuario = fs.readdirSync(FIRMAS_USUARIOS_DIR)
+    .find(f => f.startsWith(`usuario-${e.usuario_id}.`));
+  let firmaUsuarioHtml = '<div style="height:64px"></div>';
+  if (archivoFirmaUsuario) {
+    const ext = path.extname(archivoFirmaUsuario).toLowerCase();
+    const mime = (ext === '.jpg' || ext === '.jpeg') ? 'image/jpeg' : 'image/png';
+    const b64 = fs.readFileSync(path.join(FIRMAS_USUARIOS_DIR, archivoFirmaUsuario)).toString('base64');
+    firmaUsuarioHtml = `<img src="data:${mime};base64,${b64}" style="max-width:220px;max-height:80px;display:block;margin:0 auto .35rem;border-radius:4px;border:1px solid #e2e8f0">`;
+  }
 
   const html = `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
@@ -650,8 +676,14 @@ router.get('/entrega/:entregaId/comprobante', (req, res) => {
     </div>
 
     <div class="firmas">
-      <div class="firma"><div class="linea">Firma de quien retira</div></div>
-      <div class="firma"><div class="linea">Firma de bodega</div></div>
+      <div class="firma">
+        ${firmaHtml}
+        <div class="linea">Firma de quien retira</div>
+      </div>
+      <div class="firma">
+        ${firmaUsuarioHtml}
+        <div class="linea">Firma de bodega · ${escHtml(e.entregado_por || '')}</div>
+      </div>
     </div>
 
     <div class="pie">Documento generado por el sistema de inventario · ${escHtml(e.fecha)}</div>
@@ -716,6 +748,20 @@ router.post('/entrega/:entregaId/firma', (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
     res.json({ ok: true });
   });
+});
+
+// POST /entrega/:entregaId/firma-digital  -> guarda firma capturada en canvas como PNG
+router.post('/entrega/:entregaId/firma-digital', (req, res) => {
+  const eid = req.params.entregaId.replace(/[^a-zA-Z0-9_-]/g, '');
+  const { firma } = req.body;
+  if (!firma || !firma.startsWith('data:image/png;base64,')) {
+    return res.status(400).json({ error: 'Firma inválida' });
+  }
+  fs.readdirSync(FIRMAS_DIR).filter(f => f.startsWith(`entrega-${eid}.`))
+    .forEach(f => fs.unlinkSync(path.join(FIRMAS_DIR, f)));
+  const buf = Buffer.from(firma.replace(/^data:image\/png;base64,/, ''), 'base64');
+  fs.writeFileSync(path.join(FIRMAS_DIR, `entrega-${eid}.png`), buf);
+  res.json({ ok: true });
 });
 
 // ---------- HISTORIAL ----------

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi firma</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><a href="/" class="back">← Panel</a> &nbsp; ✍️ Mi firma</div>
+    <div class="user"><span id="userInfo">…</span></div>
+  </header>
+
+  <main class="container">
+    <div class="card" style="max-width:520px;margin:1rem auto">
+      <h2 class="section">Tu firma de bodega</h2>
+      <p class="muted">Esta firma se imprimirá automáticamente en todos los comprobantes que generes. Solo debes configurarla una vez.</p>
+
+      <div id="estadoFirma" style="margin:1.2rem 0"></div>
+
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <button type="button" class="btn" id="btnCapturar">✍️ Capturar firma</button>
+        <button type="button" class="btn-inline sec" id="btnEliminar" style="display:none">Eliminar firma</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Overlay de firma -->
+  <div id="firmaOverlay" class="firma-overlay">
+    <div class="firma-overlay-header">
+      <h3>✍️ Captura tu firma</h3>
+      <p>Firma con el dedo tal como lo harías en papel</p>
+    </div>
+    <div class="msg" id="firmaSalidaMsg"></div>
+    <div class="firma-canvas-wrap" id="firmaCanvasWrap">
+      <canvas id="firmaCanvas"></canvas>
+      <div class="firma-canvas-hint" id="firmaCanvasHint">✍️ Firma aquí</div>
+    </div>
+    <div class="firma-overlay-actions">
+      <button type="button" class="btn-inline sec" id="btnLimpiarFirma">Limpiar</button>
+      <button type="button" class="btn-inline sec" id="btnOmitirFirma">Cancelar</button>
+      <button type="button" class="btn" id="btnConfirmarFirma" disabled>✔ Guardar firma</button>
+    </div>
+  </div>
+
+  <script src="/vendor/signature_pad.umd.min.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/mi-firma.js"></script>
+  <footer class="footer-copy">&copy; Gonzalo Astargo V. &mdash; Sistema de Inventario de Bodega</footer>
+</body>
+</html>

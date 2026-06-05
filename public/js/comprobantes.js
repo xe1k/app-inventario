@@ -1,4 +1,5 @@
-let entregaActiva = null;
+let signaturePad = null;
+let entregaIdFirma = null;
 
 async function cargar() {
   const params = new URLSearchParams();
@@ -31,8 +32,8 @@ async function cargar() {
 
   for (const r of rows) {
     const firmaTag = r.tiene_firma
-      ? '<span style="color:var(--verde);font-weight:700" title="Foto subida">✔ Adjunta</span>'
-      : '<span style="color:#94a3b8">— Sin foto</span>';
+      ? '<span style="color:var(--verde);font-weight:700" title="Firma guardada">✔ Firmada</span>'
+      : '<span style="color:#94a3b8">— Sin firma</span>';
 
     const retBadge = r.retornables > 0
       ? `<span class="badge ret" style="font-size:.7rem">${r.retornables} ret.</span> ` : '';
@@ -49,7 +50,7 @@ async function cargar() {
           <button class="btn-sm" style="background:#dbeafe;color:#1e3a8a"
             onclick="reimprimir('${esc(r.entrega_id)}')">🖨️ Reimprimir</button>
           <button class="btn-sm" style="background:#f0fdf4;color:var(--verde)"
-            onclick="abrirFirma('${esc(r.entrega_id)}', '${esc(r.trabajador || '')}')">📷 Firma</button>
+            onclick="abrirFirma('${esc(r.entrega_id)}', '${esc(r.trabajador || '')}')">✍️ Firma</button>
         </div>
       </td>
     </tr>`;
@@ -62,54 +63,65 @@ function reimprimir(entregaId) {
   window.open('/api/movimientos/entrega/' + encodeURIComponent(entregaId) + '/comprobante', '_blank');
 }
 
-// ---------- Modal de firma ----------
-function abrirFirma(entregaId, trabajador) {
-  entregaActiva = entregaId;
-  $('firmaSubtitulo').textContent = `Entrega #${entregaId} · ${trabajador || '—'}`;
-  $('firmaMsg').className = 'msg';
-  $('firmaArchivo').value = '';
+// ── Overlay de firma digital ──
+function abrirFirma(entregaId, trabajadorNombre) {
+  entregaIdFirma = entregaId;
+  $('firmaOverlaySubtitulo').textContent = `Entrega #${entregaId} · ${trabajadorNombre}`;
+  $('firmaSalidaMsg').className = 'msg';
+  $('firmaCanvasHint').style.display = '';
+  $('btnConfirmarFirma').disabled = true;
+  $('firmaOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 
-  // Intentar mostrar la foto existente.
-  const preview = $('firmaPreview');
-  const img = document.createElement('img');
-  img.src = '/api/movimientos/entrega/' + encodeURIComponent(entregaId) + '/firma?t=' + Date.now();
-  img.style.cssText = 'max-width:100%;max-height:300px;border-radius:6px;border:1px solid #e2e8f0';
-  img.onerror = () => { preview.innerHTML = '<p class="muted">Aún no hay foto adjunta para esta entrega.</p>'; };
-  preview.innerHTML = '';
-  preview.appendChild(img);
-
-  $('modalFirma').classList.add('open');
-}
-
-function cerrarModal() {
-  $('modalFirma').classList.remove('open');
-  entregaActiva = null;
-}
-
-$('btnSubirFirma').addEventListener('click', async () => {
-  if (!entregaActiva) return;
-  const archivo = $('firmaArchivo').files[0];
-  if (!archivo) { mostrarMsg('firmaMsg', 'Elige una imagen primero', 'error'); return; }
-
-  const form = new FormData();
-  form.append('firma', archivo);
-
-  mostrarMsg('firmaMsg', 'Subiendo…', '');
-  const r = await fetch('/api/movimientos/entrega/' + encodeURIComponent(entregaActiva) + '/firma', {
-    method: 'POST', body: form
+  requestAnimationFrame(() => {
+    const canvas = $('firmaCanvas');
+    const wrap = $('firmaCanvasWrap');
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = wrap.clientWidth * ratio;
+    canvas.height = wrap.clientHeight * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    if (signaturePad) signaturePad.off();
+    signaturePad = new SignaturePad(canvas, {
+      backgroundColor: 'rgb(255,255,255)',
+      penColor: 'rgb(15,23,42)',
+      minWidth: 1,
+      maxWidth: 3
+    });
+    signaturePad.addEventListener('beginStroke', () => {
+      $('firmaCanvasHint').style.display = 'none';
+      $('btnConfirmarFirma').disabled = false;
+    });
   });
-  const data = await r.json();
-  if (!r.ok) { mostrarMsg('firmaMsg', data.error || 'No se pudo subir', 'error'); return; }
+}
 
-  mostrarMsg('firmaMsg', '✔ Foto guardada correctamente', 'ok');
-  // Actualizar preview con la nueva foto.
-  abrirFirma(entregaActiva, $('firmaSubtitulo').textContent.split(' · ')[1]);
-  // Refrescar tabla para actualizar el indicador de firma.
-  cargar();
+function cerrarFirmaOverlay() {
+  $('firmaOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+$('btnLimpiarFirma').addEventListener('click', () => {
+  if (signaturePad) signaturePad.clear();
+  $('firmaCanvasHint').style.display = '';
+  $('firmaSalidaMsg').className = 'msg';
+  $('btnConfirmarFirma').disabled = true;
 });
 
-// Cerrar modal al hacer clic fuera.
-$('modalFirma').addEventListener('click', (e) => { if (e.target === $('modalFirma')) cerrarModal(); });
+$('btnOmitirFirma').addEventListener('click', cerrarFirmaOverlay);
+
+$('btnConfirmarFirma').addEventListener('click', async () => {
+  $('btnConfirmarFirma').disabled = true;
+  mostrarMsg('firmaSalidaMsg', 'Guardando firma…', 'ok');
+  const r = await fetch('/api/movimientos/entrega/' + encodeURIComponent(entregaIdFirma) + '/firma-digital', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ firma: signaturePad.toDataURL('image/png') })
+  });
+  $('btnConfirmarFirma').disabled = false;
+  const data = await r.json();
+  if (!r.ok) { mostrarMsg('firmaSalidaMsg', data.error || 'No se pudo guardar la firma', 'error'); return; }
+  cerrarFirmaOverlay();
+  cargar();
+});
 
 $('btnBuscar').addEventListener('click', cargar);
 $('fQ').addEventListener('keydown', (e) => { if (e.key === 'Enter') cargar(); });

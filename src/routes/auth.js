@@ -1,7 +1,12 @@
 // Rutas de autenticación: login, logout y datos del usuario en sesión.
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const path = require('path');
+const fs = require('fs');
 const db = require('../db');
+
+const FIRMAS_USUARIOS_DIR = path.join(__dirname, '..', '..', 'data', 'firmas-usuarios');
+if (!fs.existsSync(FIRMAS_USUARIOS_DIR)) fs.mkdirSync(FIRMAS_USUARIOS_DIR, { recursive: true });
 
 const router = express.Router();
 
@@ -40,6 +45,39 @@ router.post('/logout', (req, res) => {
 router.get('/me', (req, res) => {
   if (req.session && req.session.usuario) return res.json({ usuario: req.session.usuario });
   res.status(401).json({ error: 'No autenticado' });
+});
+
+// GET /api/auth/mi-firma  -> devuelve la firma guardada del usuario en sesión
+router.get('/mi-firma', (req, res) => {
+  if (!req.session || !req.session.usuario) return res.status(401).json({ error: 'No autenticado' });
+  const uid = req.session.usuario.id;
+  const archivo = fs.readdirSync(FIRMAS_USUARIOS_DIR).find(f => f.startsWith(`usuario-${uid}.`));
+  if (!archivo) return res.status(404).json({ error: 'Sin firma' });
+  res.sendFile(path.join(FIRMAS_USUARIOS_DIR, archivo));
+});
+
+// POST /api/auth/mi-firma  -> guarda la firma del usuario en sesión (base64 PNG)
+router.post('/mi-firma', (req, res) => {
+  if (!req.session || !req.session.usuario) return res.status(401).json({ error: 'No autenticado' });
+  const uid = req.session.usuario.id;
+  const { firma } = req.body;
+  if (!firma || !firma.startsWith('data:image/png;base64,')) {
+    return res.status(400).json({ error: 'Firma inválida' });
+  }
+  fs.readdirSync(FIRMAS_USUARIOS_DIR).filter(f => f.startsWith(`usuario-${uid}.`))
+    .forEach(f => fs.unlinkSync(path.join(FIRMAS_USUARIOS_DIR, f)));
+  const buf = Buffer.from(firma.replace(/^data:image\/png;base64,/, ''), 'base64');
+  fs.writeFileSync(path.join(FIRMAS_USUARIOS_DIR, `usuario-${uid}.png`), buf);
+  res.json({ ok: true });
+});
+
+// DELETE /api/auth/mi-firma  -> elimina la firma guardada del usuario en sesión
+router.delete('/mi-firma', (req, res) => {
+  if (!req.session || !req.session.usuario) return res.status(401).json({ error: 'No autenticado' });
+  const uid = req.session.usuario.id;
+  fs.readdirSync(FIRMAS_USUARIOS_DIR).filter(f => f.startsWith(`usuario-${uid}.`))
+    .forEach(f => fs.unlinkSync(path.join(FIRMAS_USUARIOS_DIR, f)));
+  res.json({ ok: true });
 });
 
 module.exports = router;

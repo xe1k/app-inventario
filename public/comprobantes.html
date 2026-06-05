@@ -15,7 +15,7 @@
   <main class="container">
     <div class="card">
       <h2 class="section">Historial de entregas</h2>
-      <p class="muted">Busca una entrega para reimprimir su comprobante o adjuntar la foto del documento firmado.</p>
+      <p class="muted">Busca una entrega para reimprimir su comprobante o gestionar la firma del trabajador.</p>
 
       <div class="row" style="align-items:flex-end;gap:.6rem;flex-wrap:wrap">
         <div style="flex:1;min-width:160px">
@@ -39,24 +39,26 @@
     </div>
   </main>
 
-  <!-- Modal para ver / cambiar la foto de firma -->
-  <div class="modal" id="modalFirma">
-    <div class="modal-box" style="max-width:500px">
-      <div class="modal-head">
-        <h3>Foto del comprobante firmado</h3>
-        <button class="btn-sm" onclick="cerrarModal()">✕</button>
-      </div>
-      <p class="muted" id="firmaSubtitulo"></p>
-
-      <div id="firmaPreview" style="text-align:center;margin:.8rem 0"></div>
-
-      <label style="margin-top:.8rem">Subir o reemplazar foto</label>
-      <input type="file" id="firmaArchivo" accept="image/*" capture="environment">
-      <div class="msg" id="firmaMsg"></div>
-      <button type="button" class="btn" id="btnSubirFirma" style="margin-top:.8rem">Guardar foto</button>
+  <!-- Overlay de firma digital -->
+  <div id="firmaOverlay" class="firma-overlay">
+    <div class="firma-overlay-header">
+      <h3>✍️ Firma del trabajador</h3>
+      <p id="firmaOverlaySubtitulo"></p>
+    </div>
+    <p class="firma-instruccion">Entregue el dispositivo al trabajador para que firme con el dedo</p>
+    <div class="msg" id="firmaSalidaMsg"></div>
+    <div class="firma-canvas-wrap" id="firmaCanvasWrap">
+      <canvas id="firmaCanvas"></canvas>
+      <div class="firma-canvas-hint" id="firmaCanvasHint">✍️ Firma aquí</div>
+    </div>
+    <div class="firma-overlay-actions">
+      <button type="button" class="btn-inline sec" id="btnLimpiarFirma">Limpiar</button>
+      <button type="button" class="btn-inline sec" id="btnOmitirFirma">Omitir</button>
+      <button type="button" class="btn" id="btnConfirmarFirma" disabled>✔ Confirmar firma</button>
     </div>
   </div>
 
+  <script src="/vendor/signature_pad.umd.min.js"></script>
   <script src="/js/comun.js"></script>
   <script src="/js/comprobantes.js"></script>
   <footer class="footer-copy">© Gonzalo Astargo V. — Sistema de Inventario de Bodega</footer>

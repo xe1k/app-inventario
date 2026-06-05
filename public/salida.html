@@ -61,7 +61,27 @@
     </div>
   </main>
 
+  <!-- Overlay de firma digital del trabajador -->
+  <div id="firmaOverlay" class="firma-overlay">
+    <div class="firma-overlay-header">
+      <h3>✍️ Firma del trabajador</h3>
+      <p id="firmaOverlaySubtitulo"></p>
+    </div>
+    <p class="firma-instruccion">Entregue el dispositivo al trabajador para que firme con el dedo</p>
+    <div class="msg" id="firmaSalidaMsg"></div>
+    <div class="firma-canvas-wrap" id="firmaCanvasWrap">
+      <canvas id="firmaCanvas"></canvas>
+      <div class="firma-canvas-hint" id="firmaCanvasHint">✍️ Firma aquí</div>
+    </div>
+    <div class="firma-overlay-actions">
+      <button type="button" class="btn-inline sec" id="btnLimpiarFirma">Limpiar</button>
+      <button type="button" class="btn-inline sec" id="btnOmitirFirma">Omitir</button>
+      <button type="button" class="btn" id="btnConfirmarFirma" disabled>✔ Confirmar firma</button>
+    </div>
+  </div>
+
   <script src="/vendor/html5-qrcode.min.js"></script>
+  <script src="/vendor/signature_pad.umd.min.js"></script>
   <script src="/js/comun.js"></script>
   <script src="/js/escaner.js"></script>
   <script src="/js/salida.js"></script>

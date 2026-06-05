@@ -1,6 +1,9 @@
 // Registrar una entrega: varios items a un mismo trabajador, un solo comprobante.
 let recargarItems;
 let carrito = [];   // [{ item_id, codigo, nombre, tipo, unidad, cantidad, stock }]
+let signaturePad = null;
+let entregaIdFirma = null;
+let urlComprobanteActual = null;
 
 async function cargarTrabajadores(seleccionar) {
   const lista = await getJSON('/api/trabajadores');
@@ -130,9 +133,8 @@ $('btnRegistrar').addEventListener('click', async () => {
   if (data.hay_retornables) txt += ' Incluye retornables (préstamo abierto).';
   mostrarMsg('msg', txt, 'ok');
 
-  const url = '/api/movimientos/entrega/' + data.entrega_id + '/comprobante';
-  $('postAccion').innerHTML = '<button type="button" class="btn-inline" id="btnComprobante">🖨️ Imprimir comprobante</button>';
-  $('btnComprobante').addEventListener('click', () => window.open(url, '_blank'));
+  // Capturar nombre del trabajador antes de limpiar el select.
+  const trabajadorNombre = ($('trabajador').selectedOptions[0]?.text || '').split(' · ')[0];
 
   // Limpiar para la próxima entrega.
   carrito = [];
@@ -141,6 +143,75 @@ $('btnRegistrar').addEventListener('click', async () => {
   $('observacion').value = '';
   $('trabajador').value = '';
   recargarItems();
+
+  abrirFirmaOverlay(data.entrega_id, trabajadorNombre);
+});
+
+// ── Firma digital ──
+function abrirFirmaOverlay(entregaId, trabajadorNombre) {
+  entregaIdFirma = entregaId;
+  urlComprobanteActual = '/api/movimientos/entrega/' + entregaId + '/comprobante';
+  $('firmaOverlaySubtitulo').textContent = `Entrega #${entregaId} · ${trabajadorNombre}`;
+  $('firmaSalidaMsg').className = 'msg';
+  $('firmaCanvasHint').style.display = '';
+  $('btnConfirmarFirma').disabled = true;
+  $('firmaOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  requestAnimationFrame(() => {
+    const canvas = $('firmaCanvas');
+    const wrap = $('firmaCanvasWrap');
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = wrap.clientWidth * ratio;
+    canvas.height = wrap.clientHeight * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    if (signaturePad) signaturePad.off();
+    signaturePad = new SignaturePad(canvas, {
+      backgroundColor: 'rgb(255,255,255)',
+      penColor: 'rgb(15,23,42)',
+      minWidth: 1,
+      maxWidth: 3
+    });
+    signaturePad.addEventListener('beginStroke', () => {
+      $('firmaCanvasHint').style.display = 'none';
+      $('btnConfirmarFirma').disabled = false;
+    });
+  });
+}
+
+function cerrarFirmaOverlay() {
+  $('firmaOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  $('postAccion').innerHTML = `<button type="button" class="btn-inline" id="btnComprobante">🖨️ Ver comprobante</button>`;
+  $('btnComprobante').addEventListener('click', () => window.open(urlComprobanteActual, '_blank'));
+}
+
+$('btnLimpiarFirma').addEventListener('click', () => {
+  if (signaturePad) signaturePad.clear();
+  $('firmaCanvasHint').style.display = '';
+  $('firmaSalidaMsg').className = 'msg';
+  $('btnConfirmarFirma').disabled = true;
+});
+
+$('btnOmitirFirma').addEventListener('click', cerrarFirmaOverlay);
+
+$('btnConfirmarFirma').addEventListener('click', async () => {
+  if (!signaturePad || signaturePad.isEmpty()) {
+    mostrarMsg('firmaSalidaMsg', 'El trabajador aún no ha firmado', 'error');
+    return;
+  }
+  $('btnConfirmarFirma').disabled = true;
+  mostrarMsg('firmaSalidaMsg', 'Guardando firma…', 'ok');
+  const r = await fetch('/api/movimientos/entrega/' + encodeURIComponent(entregaIdFirma) + '/firma-digital', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ firma: signaturePad.toDataURL('image/png') })
+  });
+  $('btnConfirmarFirma').disabled = false;
+  const data = await r.json();
+  if (!r.ok) { mostrarMsg('firmaSalidaMsg', data.error || 'No se pudo guardar la firma', 'error'); return; }
+  cerrarFirmaOverlay();
+  mostrarMsg('msg', `✔ Firma guardada. Entrega #${entregaIdFirma} lista.`, 'ok');
 });
 
 (async () => {

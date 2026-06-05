@@ -73,7 +73,5 @@ $('buscar').addEventListener('input', cargar);
   const usuario = await cargarUsuario();
   if (!usuario) return;
   rol = usuario.rol;
-  // Esta pantalla es solo para el administrador.
-  if (rol !== 'admin') { window.location.href = '/'; return; }
   cargar();
 })();
