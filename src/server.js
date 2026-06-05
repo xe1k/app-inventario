@@ -6,6 +6,8 @@ const http = require('http');
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const SqliteStore = require('better-sqlite3-session-store')(session);
+const db = require('./db');
 
 const { obtenerCert, ipsLocales } = require('./cert');
 const { backupDiario } = require('./backup');
@@ -30,7 +32,9 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'cambia-esta-clave-secreta-en-produccion',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 12 } // 12 horas (cubre un turno)
+  rolling: true,                              // renueva la cookie con cada request
+  store: new SqliteStore({ client: db }),
+  cookie: { maxAge: 1000 * 60 * 60 * 12 }    // 12 horas de inactividad
 }));
 
 // --- API ---
